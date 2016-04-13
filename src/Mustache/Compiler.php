@@ -189,11 +189,18 @@ class Mustache_Compiler
 
             public function renderInternal(Mustache_Context $context, $indent = \'\')
             {
+                $objectHash = md5(serialize($context));
+                $cacheKey = get_class($this) . "-{$objectHash}";
+                if ($buffer = app()->cache->get($cacheKey)) {
+                    return $buffer;
+                }
+
                 $this->lambdaHelper = new Mustache_LambdaHelper($this->mustache, $context);
                 $buffer = \'\';
                 $newContext = array();
         %s
 
+                app()->cache->set($cacheKey, $buffer);
                 return $buffer;
             }
         %s
@@ -206,10 +213,17 @@ class Mustache_Compiler
         {%s
             public function renderInternal(Mustache_Context $context, $indent = \'\')
             {
+                $objectHash = md5(serialize($context));
+                $cacheKey = get_class($this) . "--{$objectHash}";
+                if ($buffer = app()->cache->get($cacheKey)) {
+                    return $buffer;
+                }
+
                 $buffer = \'\';
                 $newContext = array();
         %s
 
+                app()->cache->set($cacheKey, $buffer);
                 return $buffer;
             }
         }';
